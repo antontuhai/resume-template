@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://atuhai-cv.netlify.app/sitemap.xml

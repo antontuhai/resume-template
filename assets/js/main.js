@@ -89,35 +89,97 @@
     });
   });
 
-  const testimonialDialog = document.querySelector('[data-testimonial-dialog]');
-  const testimonialDialogImage = testimonialDialog?.querySelector('[data-testimonial-dialog-image]');
-  const testimonialDialogTitle = testimonialDialog?.querySelector('[data-testimonial-dialog-title]');
-  const testimonialDialogClose = testimonialDialog?.querySelector('[data-testimonial-close]');
-  let testimonialTrigger = null;
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-  document.querySelectorAll('[data-testimonial-open]').forEach((button) => {
+  document.querySelectorAll('[data-feedback-carousel]').forEach((carousel) => {
+    const track = carousel.querySelector('[data-feedback-track]');
+    const slides = Array.from(carousel.querySelectorAll('.feedback-card'));
+    const controls = carousel.parentElement?.querySelector('[data-feedback-controls]');
+    const previousButton = controls?.querySelector('[data-feedback-prev]');
+    const nextButton = controls?.querySelector('[data-feedback-next]');
+    const status = controls?.querySelector('[data-feedback-status]');
+    let currentIndex = 0;
+    let scrollFrame = 0;
+
+    if (!track || !slides.length || !previousButton || !nextButton || !status) return;
+
+    const getVisibleCount = () => Math.max(1, Math.round(track.clientWidth / slides[0].getBoundingClientRect().width));
+    const getMaximumIndex = () => Math.max(0, slides.length - getVisibleCount());
+
+    const updateControls = () => {
+      const visibleCount = getVisibleCount();
+      currentIndex = Math.min(currentIndex, getMaximumIndex());
+      const firstVisible = currentIndex + 1;
+      const lastVisible = Math.min(slides.length, currentIndex + visibleCount);
+      status.textContent = firstVisible === lastVisible ? `${firstVisible} of ${slides.length}` : `${firstVisible}–${lastVisible} of ${slides.length}`;
+      previousButton.disabled = currentIndex === 0;
+      nextButton.disabled = currentIndex >= getMaximumIndex();
+    };
+
+    const goToSlide = (index) => {
+      currentIndex = Math.max(0, Math.min(index, getMaximumIndex()));
+      const left = slides[currentIndex].offsetLeft - track.offsetLeft;
+      track.scrollTo({ left, behavior: reducedMotion.matches ? 'auto' : 'smooth' });
+      updateControls();
+    };
+
+    previousButton.addEventListener('click', () => goToSlide(currentIndex - getVisibleCount()));
+    nextButton.addEventListener('click', () => goToSlide(currentIndex + getVisibleCount()));
+
+    track.addEventListener('keydown', (event) => {
+      if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+      event.preventDefault();
+      if (event.key === 'ArrowLeft') goToSlide(currentIndex - getVisibleCount());
+      if (event.key === 'ArrowRight') goToSlide(currentIndex + getVisibleCount());
+      if (event.key === 'Home') goToSlide(0);
+      if (event.key === 'End') goToSlide(getMaximumIndex());
+    });
+
+    track.addEventListener('scroll', () => {
+      cancelAnimationFrame(scrollFrame);
+      scrollFrame = requestAnimationFrame(() => {
+        currentIndex = slides.reduce((nearestIndex, slide, index) => {
+          const distance = Math.abs((slide.offsetLeft - track.offsetLeft) - track.scrollLeft);
+          const nearestDistance = Math.abs((slides[nearestIndex].offsetLeft - track.offsetLeft) - track.scrollLeft);
+          return distance < nearestDistance ? index : nearestIndex;
+        }, 0);
+        updateControls();
+      });
+    }, { passive: true });
+
+    window.addEventListener('resize', updateControls);
+    updateControls();
+  });
+
+  const feedbackDialog = document.querySelector('[data-feedback-dialog]');
+  const feedbackDialogImage = feedbackDialog?.querySelector('[data-feedback-dialog-image]');
+  const feedbackDialogTitle = feedbackDialog?.querySelector('[data-feedback-dialog-title]');
+  const feedbackDialogClose = feedbackDialog?.querySelector('[data-feedback-close]');
+  let feedbackTrigger = null;
+
+  document.querySelectorAll('[data-feedback-open]').forEach((button) => {
     button.addEventListener('click', () => {
-      const source = button.dataset.testimonialSrc;
-      if (!testimonialDialog || !testimonialDialogImage || !testimonialDialogTitle || typeof testimonialDialog.showModal !== 'function') {
+      const source = button.dataset.feedbackSrc;
+      if (!feedbackDialog || !feedbackDialogImage || !feedbackDialogTitle || typeof feedbackDialog.showModal !== 'function') {
         window.open(source, '_blank', 'noopener');
         return;
       }
 
-      testimonialTrigger = button;
-      testimonialDialogImage.src = source;
-      testimonialDialogImage.alt = button.dataset.testimonialAlt || 'Original colleague feedback';
-      testimonialDialogTitle.textContent = button.dataset.testimonialTitle || 'Colleague feedback';
-      testimonialDialog.showModal();
+      feedbackTrigger = button;
+      feedbackDialogImage.src = source;
+      feedbackDialogImage.alt = button.dataset.feedbackAlt || 'Original feedback or recognition';
+      feedbackDialogTitle.textContent = button.dataset.feedbackTitle || 'Feedback or recognition';
+      feedbackDialog.showModal();
     });
   });
 
-  testimonialDialogClose?.addEventListener('click', () => testimonialDialog.close());
-  testimonialDialog?.addEventListener('click', (event) => {
-    if (event.target === testimonialDialog) testimonialDialog.close();
+  feedbackDialogClose?.addEventListener('click', () => feedbackDialog.close());
+  feedbackDialog?.addEventListener('click', (event) => {
+    if (event.target === feedbackDialog) feedbackDialog.close();
   });
-  testimonialDialog?.addEventListener('close', () => {
-    testimonialTrigger?.focus();
-    testimonialTrigger = null;
+  feedbackDialog?.addEventListener('close', () => {
+    feedbackTrigger?.focus();
+    feedbackTrigger = null;
   });
 
   const navLinks = Array.from(document.querySelectorAll('.primary-nav a[href^="#"]'));

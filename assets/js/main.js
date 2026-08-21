@@ -59,6 +59,240 @@
     });
   }
 
+  const searchDialog = document.querySelector('[data-search-dialog]');
+  const searchOpenButtons = Array.from(document.querySelectorAll('[data-search-open]'));
+  const searchCloseButton = searchDialog?.querySelector('[data-search-close]');
+  const searchForm = searchDialog?.querySelector('[data-site-search]');
+  const searchInput = searchDialog?.querySelector('[data-search-input]');
+  const searchStatus = searchDialog?.querySelector('[data-search-status]');
+  const searchResults = searchDialog?.querySelector('[data-search-results]');
+  const searchEmpty = searchDialog?.querySelector('[data-search-empty]');
+  const searchSuggestions = searchDialog?.querySelector('[data-search-suggestions]');
+  const searchSuggestionButtons = Array.from(searchDialog?.querySelectorAll('[data-search-suggestion]') || []);
+  let searchTrigger = null;
+  let currentSearchMatches = [];
+
+  const normalizeSearchText = (value) => value
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLocaleLowerCase('en')
+    .replace(/[^a-z0-9+#./\s-]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  const searchSectionLabels = {
+    top: 'Profile',
+    approach: 'Approach',
+    impact: 'Impact',
+    experience: 'Experience',
+    work: 'Selected work',
+    feedback: 'Feedback & recognition',
+    capabilities: 'Capabilities',
+    education: 'Education & languages',
+    contact: 'Contact'
+  };
+
+  const searchableNodes = Array.from(document.querySelectorAll([
+    '#top .hero-copy',
+    '#approach .model-card',
+    '#approach .lens-panel',
+    '#impact .impact-card',
+    '#experience .timeline-item',
+    '#work .work-card',
+    '#work .growth-band',
+    '#feedback .feedback-card',
+    '#capabilities .capability-groups article',
+    '#education .education-card article',
+    '#education .language-card',
+    '#contact .contact-grid > div'
+  ].join(',')));
+
+  const searchIndex = searchableNodes.map((node, index) => {
+    const section = node.closest('section[id]');
+    const sectionId = section?.id || 'top';
+    const heading = node.querySelector('h1, h2, h3, h4');
+    const title = heading?.textContent.trim() || searchSectionLabels[sectionId] || 'Profile detail';
+    const content = node.textContent.replace(/\s+/g, ' ').trim();
+    if (!node.id) node.id = `profile-search-target-${index + 1}`;
+
+    return {
+      target: node,
+      targetId: node.id,
+      title,
+      normalizedTitle: normalizeSearchText(title),
+      content,
+      normalizedContent: normalizeSearchText(content),
+      section: searchSectionLabels[sectionId] || sectionId
+    };
+  });
+
+  const getSearchScore = (item, phrase, tokens) => {
+    let score = 0;
+    if (item.normalizedTitle === phrase) score += 80;
+    else if (item.normalizedTitle.includes(phrase)) score += 45;
+    if (item.normalizedContent.includes(phrase)) score += 25;
+
+    tokens.forEach((token) => {
+      if (item.normalizedTitle.includes(token)) score += 10;
+      if (item.normalizedContent.includes(token)) score += 3;
+    });
+
+    return score;
+  };
+
+  const getSearchExcerpt = (item, tokens) => {
+    const sentences = item.content.split(/(?<=[.!?])\s+/);
+    const bestSentence = sentences.find((sentence) => {
+      const normalizedSentence = normalizeSearchText(sentence);
+      return tokens.some((token) => normalizedSentence.includes(token));
+    }) || sentences[0] || item.content;
+    const compact = bestSentence.replace(/\s+/g, ' ').trim();
+    return compact.length > 190 ? `${compact.slice(0, 187).trimEnd()}…` : compact;
+  };
+
+  const sanitizeSearchTermForAnalytics = (value) => {
+    const compact = value.replace(/\s+/g, ' ').trim().slice(0, 60);
+    const mayContainPersonalData = /@|(?:\+?\d[\d\s().-]{6,})/.test(compact);
+    return mayContainPersonalData ? '[redacted]' : compact;
+  };
+
+  const renderSearchResults = (value) => {
+    if (!searchResults || !searchStatus || !searchEmpty || !searchSuggestions) return [];
+    const phrase = normalizeSearchText(value);
+    const tokens = phrase.split(' ').filter((token) => token.length > 1);
+    searchResults.replaceChildren();
+    searchSuggestions.hidden = Boolean(phrase);
+
+    if (!phrase || !tokens.length) {
+      searchStatus.textContent = 'Start typing to search the full profile.';
+      searchEmpty.hidden = true;
+      currentSearchMatches = [];
+      return currentSearchMatches;
+    }
+
+    currentSearchMatches = searchIndex
+      .map((item) => ({ item, score: getSearchScore(item, phrase, tokens) }))
+      .filter((match) => match.score > 0)
+      .sort((a, b) => b.score - a.score || a.item.title.localeCompare(b.item.title))
+      .slice(0, 8);
+
+    searchStatus.textContent = `${currentSearchMatches.length} ${currentSearchMatches.length === 1 ? 'result' : 'results'} for “${value.trim()}”`;
+    searchEmpty.hidden = currentSearchMatches.length > 0;
+
+    currentSearchMatches.forEach(({ item }, index) => {
+      const listItem = document.createElement('li');
+      const link = document.createElement('a');
+      const meta = document.createElement('span');
+      const title = document.createElement('strong');
+      const excerpt = document.createElement('p');
+
+      link.className = 'search-result-link';
+      link.href = `#${item.targetId}`;
+      link.dataset.searchResult = '';
+      link.dataset.searchPosition = String(index + 1);
+      meta.className = 'search-result-meta';
+      meta.textContent = item.section;
+      title.className = 'search-result-title';
+      title.textContent = item.title;
+      excerpt.className = 'search-result-excerpt';
+      excerpt.textContent = getSearchExcerpt(item, tokens);
+      link.append(meta, title, excerpt);
+      listItem.append(link);
+      searchResults.append(listItem);
+    });
+
+    return currentSearchMatches;
+  };
+
+  const trackSearch = () => {
+    const query = searchInput?.value.trim() || '';
+    if (query.length < 2) return;
+    window.siteAnalytics?.track('view_search_results', {
+      search_term: sanitizeSearchTermForAnalytics(query),
+      result_count: currentSearchMatches.length,
+      page_path: window.location.pathname
+    });
+  };
+
+  const openSearch = () => {
+    if (!searchDialog || typeof searchDialog.showModal !== 'function') return;
+    closeNavigation();
+    searchTrigger = document.activeElement;
+    searchDialog.showModal();
+    document.body.classList.add('search-open');
+    renderSearchResults(searchInput?.value || '');
+    window.siteAnalytics?.track('site_search_open', { page_path: window.location.pathname });
+    requestAnimationFrame(() => searchInput?.focus());
+  };
+
+  const closeSearch = () => {
+    if (searchDialog?.open) searchDialog.close();
+  };
+
+  searchOpenButtons.forEach((button) => button.addEventListener('click', openSearch));
+  searchCloseButton?.addEventListener('click', closeSearch);
+  searchDialog?.addEventListener('click', (event) => {
+    if (event.target === searchDialog) closeSearch();
+  });
+  searchDialog?.addEventListener('close', () => {
+    document.body.classList.remove('search-open');
+    searchTrigger?.focus();
+    searchTrigger = null;
+  });
+
+  searchInput?.addEventListener('input', () => renderSearchResults(searchInput.value));
+  searchForm?.addEventListener('submit', (event) => {
+    event.preventDefault();
+    renderSearchResults(searchInput?.value || '');
+    trackSearch();
+  });
+
+  searchSuggestionButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      if (!searchInput) return;
+      searchInput.value = button.dataset.searchSuggestion || '';
+      renderSearchResults(searchInput.value);
+      trackSearch();
+      searchInput.focus();
+    });
+  });
+
+  searchResults?.addEventListener('click', (event) => {
+    const link = event.target.closest('[data-search-result]');
+    if (!link) return;
+    event.preventDefault();
+    const target = document.getElementById(link.hash.slice(1));
+    const matchedItem = currentSearchMatches[Number(link.dataset.searchPosition) - 1]?.item;
+
+    window.siteAnalytics?.track('search_result_click', {
+      search_term: sanitizeSearchTermForAnalytics(searchInput?.value || ''),
+      result_title: matchedItem?.title,
+      result_section: matchedItem?.section,
+      result_position: Number(link.dataset.searchPosition),
+      page_path: window.location.pathname
+    });
+
+    if (target?.matches('.lens-panel')) {
+      document.querySelector(`[aria-controls="${target.id}"]`)?.click();
+    }
+
+    closeSearch();
+    requestAnimationFrame(() => {
+      target?.scrollIntoView({ behavior: reducedMotion.matches ? 'auto' : 'smooth', block: 'center', inline: 'center' });
+      target?.classList.add('search-target-active');
+      window.setTimeout(() => target?.classList.remove('search-target-active'), 1900);
+    });
+  });
+
+  document.addEventListener('keydown', (event) => {
+    const typing = event.target.matches('input, textarea, select, [contenteditable="true"]');
+    const shortcut = (event.ctrlKey || event.metaKey) && event.key.toLocaleLowerCase('en') === 'k';
+    const slashShortcut = event.key === '/' && !typing && !event.ctrlKey && !event.metaKey && !event.altKey;
+    if (!shortcut && !slashShortcut) return;
+    event.preventDefault();
+    openSearch();
+  });
+
   document.querySelectorAll('[data-lens-block]').forEach((block) => {
     const tabs = Array.from(block.querySelectorAll('[role="tab"]'));
     const panels = Array.from(block.querySelectorAll('[role="tabpanel"]'));

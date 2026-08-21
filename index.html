@@ -29,7 +29,7 @@
   <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
   <link rel="alternate icon" href="assets/img/favicon.png" type="image/png">
   <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
-  <link rel="stylesheet" href="assets/css/style.css?v=20260820-3">
+  <link rel="stylesheet" href="assets/css/style.css?v=20260821-1">
   <script>
     document.documentElement.classList.add('js');
     try {
@@ -59,7 +59,7 @@
         "isPartOf": { "@id": "https://atuhai-cv.netlify.app/#website" },
         "mainEntity": { "@id": "https://atuhai-cv.netlify.app/#anton-tuhai" },
         "primaryImageOfPage": { "@id": "https://atuhai-cv.netlify.app/#portrait" },
-        "dateModified": "2026-08-20T18:18:15+03:00",
+        "dateModified": "2026-08-21T19:35:00+03:00",
         "inLanguage": "en"
       },
       {
@@ -114,10 +114,15 @@
       <nav class="primary-nav" id="primary-navigation" aria-label="Primary navigation">
         <a href="#approach">Approach</a><a href="#impact">Impact</a><a href="#experience">Experience</a><a href="#work">Work</a><a href="#contact">Contact</a>
       </nav>
-      <button class="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to light theme">
-        <svg class="theme-icon theme-icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.66 6.34l1.41-1.41"></path></svg>
-        <svg class="theme-icon theme-icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"></path></svg>
-      </button>
+      <div class="header-tools">
+        <button class="search-toggle" type="button" aria-haspopup="dialog" aria-controls="site-search-dialog" aria-label="Search this site" data-search-open>
+          <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4.25 4.25"></path></svg>
+        </button>
+        <button class="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to light theme">
+          <svg class="theme-icon theme-icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.66 6.34l1.41-1.41"></path></svg>
+          <svg class="theme-icon theme-icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"></path></svg>
+        </button>
+      </div>
     </div>
   </header>
 
@@ -371,6 +376,44 @@
     </section>
   </main>
 
+  <dialog class="search-dialog" id="site-search-dialog" data-search-dialog aria-labelledby="site-search-title">
+    <div class="search-dialog-shell">
+      <header class="search-dialog-header">
+        <div>
+          <p class="section-kicker">Search this profile</p>
+          <h2 id="site-search-title">Find experience, work, and capabilities</h2>
+        </div>
+        <button class="search-dialog-close" type="button" data-search-close aria-label="Close search">×</button>
+      </header>
+      <form class="search-form" role="search" data-site-search>
+        <label class="sr-only" for="site-search-input">Search this site</label>
+        <div class="search-input-wrap">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4.25 4.25"></path></svg>
+          <input id="site-search-input" type="search" placeholder="Try API documentation, content strategy, or Postman" autocomplete="off" spellcheck="false" maxlength="80" aria-describedby="site-search-hint" data-search-input>
+          <kbd>Esc</kbd>
+        </div>
+        <p class="search-hint" id="site-search-hint">Search runs locally in your browser. Press Enter to record a privacy-filtered search event if analytics consent is active.</p>
+      </form>
+      <div class="search-body">
+        <div class="search-suggestions" data-search-suggestions>
+          <p class="mono">Popular searches</p>
+          <div>
+            <button type="button" data-search-suggestion="API documentation">API documentation</button>
+            <button type="button" data-search-suggestion="documentation strategy">Documentation strategy</button>
+            <button type="button" data-search-suggestion="technical content">Technical content</button>
+            <button type="button" data-search-suggestion="knowledge operations">Knowledge operations</button>
+          </div>
+        </div>
+        <p class="search-status" aria-live="polite" data-search-status>Start typing to search the full profile.</p>
+        <ol class="search-results" data-search-results></ol>
+        <div class="search-empty" data-search-empty hidden>
+          <strong>No exact match yet.</strong>
+          <p>Try a broader term such as documentation, API, content, leadership, knowledge, or AI.</p>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
   <dialog class="feedback-dialog" data-feedback-dialog aria-labelledby="feedback-dialog-title">
     <div class="feedback-dialog-inner">
       <button class="feedback-dialog-close" type="button" data-feedback-close aria-label="Close original feedback or recognition">×</button>
@@ -380,8 +423,33 @@
     </div>
   </dialog>
 
-  <footer class="site-footer"><div class="container footer-inner"><p>© <span data-current-year>2026</span> Anton Tuhai</p><p>Lead Technical Writer · Documentation Engineer · Technical Content Lead</p><a href="#top">Back to top <span aria-hidden="true">↑</span></a></div></footer>
-  <script src="assets/js/analytics.js?v=20260820" defer></script>
-  <script src="assets/js/main.js?v=20260820-2" defer></script>
+  <aside class="consent-banner" data-consent-banner role="dialog" aria-labelledby="consent-title" hidden>
+    <div class="consent-inner">
+      <div class="consent-copy">
+        <p class="mono">Privacy choice</p>
+        <h2 id="consent-title">Optional analytics, only with your permission</h2>
+        <p>Analytics helps improve this professional site by measuring visits and interactions. Choose whether to allow it; the site works fully either way.</p>
+        <button class="consent-details-toggle" type="button" aria-expanded="false" aria-controls="consent-details" data-consent-details>What is collected?</button>
+        <div class="consent-details" id="consent-details" data-consent-details-panel hidden>
+          <p>With permission, Google Analytics measures page views, approximate location, browser and device type, traffic sources, scrolling, outbound clicks, downloads, site searches, and available form or video interactions. Google Signals and advertising personalization are disabled. Potential email addresses and phone numbers entered in this site’s search are redacted before its custom search event is sent. Read <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Google’s Privacy Policy</a>.</p>
+        </div>
+        <p class="consent-status" data-consent-status></p>
+      </div>
+      <div class="consent-actions">
+        <button class="consent-button consent-button-secondary" type="button" data-consent-deny>Necessary only</button>
+        <button class="consent-button consent-button-primary" type="button" data-consent-allow>Allow analytics</button>
+      </div>
+    </div>
+  </aside>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p>© <span data-current-year>2026</span> Anton Tuhai</p>
+      <p>Lead Technical Writer · Documentation Engineer · Technical Content Lead</p>
+      <div class="footer-actions"><button type="button" data-consent-manage>Analytics preferences</button><a href="#top">Back to top <span aria-hidden="true">↑</span></a></div>
+    </div>
+  </footer>
+  <script src="assets/js/analytics.js?v=20260821-1" defer></script>
+  <script src="assets/js/main.js?v=20260821-1" defer></script>
 </body>
 </html>

@@ -1045,6 +1045,59 @@ h4 {
   margin-top: 1rem;
 }
 
+.assignment-intro {
+  margin-top: 0.8rem;
+}
+
+.assignment-list {
+  display: grid;
+  margin-top: 1.5rem;
+  gap: 1.35rem;
+}
+
+.assignment {
+  padding-top: 1.35rem;
+  border-top: 1px solid var(--line);
+}
+
+.assignment-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.assignment-heading h4 {
+  margin: 0;
+  color: var(--text);
+  font-size: 1.05rem;
+  line-height: 1.35;
+}
+
+.assignment-heading span {
+  flex: 0 0 auto;
+  color: var(--text-faint);
+  font-size: 0.61rem;
+  line-height: 1.5;
+  text-transform: uppercase;
+}
+
+.assignment-role {
+  margin: 0.35rem 0 0.65rem;
+  color: var(--accent);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.assignment p:not(.assignment-role) {
+  color: var(--text-soft);
+  font-size: 0.91rem;
+}
+
+.assignment p:last-child {
+  margin-bottom: 0;
+}
+
 .section-work {
   background: linear-gradient(180deg, var(--bg) 0, var(--bg-soft) 100%);
 }
@@ -2239,6 +2292,15 @@ h4 {
   .role-heading span {
     display: inline-block;
     margin-bottom: 0.6rem;
+  }
+
+  .assignment-heading {
+    display: block;
+  }
+
+  .assignment-heading span {
+    display: inline-block;
+    margin-top: 0.35rem;
   }
 
   .work-topline {

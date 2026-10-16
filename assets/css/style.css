@@ -482,9 +482,14 @@ h4 {
 
 .hero-intro {
   max-width: 45rem;
-  margin-bottom: 2.3rem;
+  margin-bottom: 1rem;
   color: var(--text-soft);
   font-size: clamp(1.05rem, 1.7vw, 1.28rem);
+}
+
+.hero-intro-secondary {
+  margin-bottom: 2.3rem;
+  font-size: clamp(1rem, 1.4vw, 1.12rem);
 }
 
 .hero-intro strong {
@@ -624,7 +629,7 @@ h4 {
   position: relative;
   z-index: 2;
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   margin-top: clamp(5rem, 10vw, 8rem);
   border-block: 1px solid var(--line);
 }
@@ -644,7 +649,7 @@ h4 {
 
 .proof-item strong {
   color: var(--accent);
-  font-size: clamp(1.9rem, 4vw, 3rem);
+  font-size: clamp(1.7rem, 3.25vw, 2.7rem);
   letter-spacing: -0.05em;
   line-height: 1;
 }
@@ -2149,16 +2154,17 @@ h4 {
   }
 
   .proof-grid {
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .proof-item {
-    grid-column: span 2;
+    grid-column: auto;
   }
 
   .proof-item:nth-child(4),
-  .proof-item:nth-child(5) {
-    grid-column: span 3;
+  .proof-item:nth-child(5),
+  .proof-item:nth-child(6) {
+    grid-column: auto;
     border-top: 1px solid var(--line);
   }
 
@@ -2272,19 +2278,24 @@ h4 {
   }
 
   .proof-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .proof-item,
   .proof-item:nth-child(4),
-  .proof-item:nth-child(5) {
-    grid-column: 1 / -1;
+  .proof-item:nth-child(5),
+  .proof-item:nth-child(6) {
+    grid-column: auto;
     border-top: 1px solid var(--line);
-    border-left: 0;
+    border-left: 1px solid var(--line);
   }
 
-  .proof-item:first-child {
+  .proof-item:nth-child(-n+2) {
     border-top: 0;
+  }
+
+  .proof-item:nth-child(odd) {
+    border-left: 0;
   }
 
   .lens-tabs {

@@ -476,8 +476,8 @@ h4 {
 }
 
 .hero-copy h1 {
-  max-width: 16ch;
-  font-size: clamp(2.8rem, 5vw, 4.8rem);
+  max-width: 20ch;
+  font-size: clamp(2.35rem, 4.25vw, 4.2rem);
 }
 
 .hero-intro {
@@ -2248,6 +2248,10 @@ h4 {
   h1 {
     margin-bottom: 1.25rem;
     font-size: 2.25rem;
+  }
+
+  .hero-copy h1 {
+    font-size: clamp(2rem, 8vw, 2.8rem);
   }
 
   .hero {

@@ -480,6 +480,20 @@ h4 {
   font-size: clamp(2.35rem, 4.25vw, 4.2rem);
 }
 
+.hero-title-main,
+.hero-title-secondary {
+  display: block;
+}
+
+.hero-title-secondary {
+  margin-top: 0.55em;
+  color: var(--accent);
+  font-size: 0.62em;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+}
+
 .hero-intro {
   max-width: 45rem;
   margin-bottom: 1rem;
